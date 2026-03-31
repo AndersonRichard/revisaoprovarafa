@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado Java — Rafael</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --border: #2a2d3a;
+    --accent: #5bffc8;
+    --accent2: #ff6b6b;
+    --accent3: #f7c948;
+    --text: #e8eaf0;
+    --muted: #7a7f96;
+    --code-bg: #1a1d26;
+    --correct: #1a3d2e;
+    --correct-border: #4ade80;
+    --wrong: #3d1a1a;
+    --wrong-border: #f87171;
+    --neutral: #1e2130;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(14,15,20,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .logo span { color: var(--accent); }
+  .header-info {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  #timer {
+    color: var(--accent3);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  #progress-text { color: var(--accent); }
+
+  /* ---- PROGRESS BAR ---- */
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    position: sticky;
+    top: 73px;
+    z-index: 99;
+  }
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 120px;
+  }
+
+  .intro {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .intro h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+  .intro h1 em { color: var(--accent); font-style: normal; }
+  .intro p {
+    color: var(--muted);
+    margin-top: 12px;
+    font-size: 0.95rem;
+  }
+
+  /* ---- SECTION TITLE ---- */
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin-bottom: 32px;
+  }
+
+  /* ---- QUESTION CARD ---- */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+    scroll-margin-top: 100px;
+  }
+  .question-card.answered-correct { border-color: var(--correct-border); }
+  .question-card.answered-wrong   { border-color: var(--wrong-border); }
+
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+  .q-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: var(--border);
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .q-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent3);
+    background: rgba(247,201,72,0.1);
+    border: 1px solid rgba(247,201,72,0.3);
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .q-text {
+    font-size: 0.97rem;
+    margin-bottom: 20px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .q-text strong { color: var(--accent3); }
+
+  /* code blocks inside question */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    margin: 12px 0 20px;
+    color: #a8d8b4;
+    white-space: pre;
+  }
+
+  /* ---- OPTIONS ---- */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg);
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    width: 100%;
+  }
+  .option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(91,255,200,0.04);
+  }
+  .option .opt-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 22px;
+    margin-top: 2px;
+  }
+  .option.selected { border-color: #5b9fff; background: rgba(91,159,255,0.08); }
+  .option.correct  { border-color: var(--correct-border); background: var(--correct); }
+  .option.wrong    { border-color: var(--wrong-border);   background: var(--wrong); }
+  .option:disabled { cursor: default; }
+
+  /* ---- OPEN QUESTION ---- */
+  .open-answer {
+    width: 100%;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+  }
+  .open-answer:focus { outline: none; border-color: var(--accent); }
+
+  /* ---- GABARITO ---- */
+  .gabarito-box {
+    margin-top: 16px;
+    background: rgba(91,255,200,0.05);
+    border: 1px solid rgba(91,255,200,0.2);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 0.88rem;
+    color: #a0ffd8;
+    display: none;
+  }
+  .gabarito-box strong { color: var(--accent); }
+  .gabarito-box.visible { display: block; }
+
+  /* ---- CONFIRM BTN ---- */
+  .confirm-btn {
+    margin-top: 18px;
+    padding: 10px 22px;
+    background: var(--accent);
+    color: #0e0f14;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .confirm-btn:hover { opacity: 0.85; }
+  .confirm-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .toggle-gabarito {
+    margin-top: 10px;
+    margin-left: 10px;
+    padding: 10px 22px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-gabarito:hover { background: rgba(91,255,200,0.08); }
+
+  /* ---- FEEDBACK ---- */
+  .feedback {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok  { color: var(--correct-border); }
+  .feedback.err { color: var(--wrong-border); }
+
+  /* ---- RESULT PANEL ---- */
+  #result-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  #result-panel.show { display: block; }
+  #result-panel h2 { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
+  #result-panel .score { font-size: 4rem; font-weight: 800; color: var(--accent); margin: 16px 0; }
+  #result-panel p { color: var(--muted); }
+
+  .result-breakdown {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+  .result-item { text-align: center; }
+  .result-item .val { font-size: 2rem; font-weight: 800; }
+  .result-item .lbl { font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .val.c { color: var(--correct-border); }
+  .val.w { color: var(--wrong-border); }
+  .val.o { color: var(--accent3); }
+
+  #restart-btn {
+    margin-top: 24px;
+    padding: 14px 36px;
+    background: var(--accent);
+    color: #0e0f14;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  #restart-btn:hover { opacity: 0.85; }
+
+  /* ---- SUBMIT ---- */
+  #submit-area {
+    text-align: center;
+    margin-top: 48px;
+  }
+  #submit-btn {
+    padding: 18px 48px;
+    background: var(--accent);
+    color: #0e0f14;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  #submit-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+  @media(max-width:600px) {
+    header { padding: 16px 20px; }
+    main { padding: 32px 16px 100px; }
+    .intro h1 { font-size: 1.7rem; }
+    .question-card { padding: 20px; }
+    .result-breakdown { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Java<span>Sim</span></div>
+  <div class="header-info">
+    <span>⏱ <span id="timer">00:00</span></span>
+    <span id="progress-text">0 / 51</span>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+  <div class="intro">
+    <h1>Revisão para a <em>Prova</em></h1>
+    <p>51 questões · Java Fundamentals · Responda com calma, o gabarito aparece após confirmar cada resposta.</p>
+  </div>
+
+  <div id="quiz-container"></div>
+
+  <div id="submit-area">
+    <button id="submit-btn" onclick="submitQuiz()">📊 Ver Resultado Final</button>
+  </div>
+
+  <div id="result-panel">
+    <h2 id="result-title"></h2>
+    <div class="score" id="result-score"></div>
+    <div class="result-breakdown">
+      <div class="result-item"><div class="val c" id="r-correct">0</div><div class="lbl">CORRETAS</div></div>
+      <div class="result-item"><div class="val w" id="r-wrong">0</div><div class="lbl">ERRADAS</div></div>
+      <div class="result-item"><div class="val o" id="r-open">0</div><div class="lbl">DISSERTATIVAS</div></div>
+      <div class="result-item"><div class="val" style="color:var(--muted)" id="r-skip">0</div><div class="lbl">NÃO RESPONDIDAS</div></div>
+    </div>
+    <p id="result-msg"></p>
+    <button id="restart-btn" onclick="restartQuiz()">🔄 Refazer Simulado</button>
+  </div>
+</main>
+
+<script>
+// =====================================================================
+// DATA
+// =====================================================================
+const questions = [
+  {
+    n: 1,
+    tag: "Compilação",
+    text: "Qual a diferença fundamental entre o processo de compilação da linguagem C para o Java?",
+    options: [
+      "A linguagem C gera um bytecode enquanto o Java gera código de máquina nativo.",
+      "A linguagem C gera código de máquina nativo para uma plataforma específica, enquanto o Java gera bytecode executado pela JVM.",
+      "Ambas as linguagens geram bytecode, contudo somente o Java é mais rápido durante todo o processo.",
+      "Java não precisa de um processo de compilação pois o mesmo é interpretado em tempo de execução."
+    ],
+    answer: "B",
+    explanation: "<strong>C</strong> compila direto para código de máquina nativo (específico para cada SO/processador). <strong>Java</strong> compila para bytecode (.class), que é executado pela JVM — daí o famoso <em>\"Write Once, Run Anywhere\"</em>."
+  },
+  {
+    n: 2,
+    tag: "JDK / JVM",
+    text: "Verdadeiro ou Falso: O JDK inclui o JRE. Portanto, ao instalar o JDK, você automaticamente tem a JVM disponível. O mesmo segue o princípio: <strong>\"Escreva uma vez, execute em qualquer lugar\"</strong>.",
+    options: ["Verdadeiro", "Falso"],
+    answer: "A",
+    explanation: "Verdadeiro. A hierarquia é: <strong>JDK ⊃ JRE ⊃ JVM</strong>. Instalar o JDK já traz tudo que você precisa para desenvolver e executar programas Java."
+  },
+  {
+    n: 3,
+    tag: "Classpath",
+    text: "O que o parâmetro <code>-cp</code> significa no comando abaixo?\n<pre>java -cp src App</pre>",
+    options: [
+      "Analise o comando abaixo executado no terminal. O que o parâmetro -cp significa?",
+      "Define o classpath, ou seja, informa ao Java onde ele deve procurar pelo arquivo .class a ser executado.",
+      "Especifica a versão do compilador a ser usada.",
+      "Comprime o bytecode antes de executar."
+    ],
+    answer: "B",
+    explanation: "<code>-cp</code> (ou <code>-classpath</code>) define o <em>classpath</em>: o caminho onde a JVM vai procurar os arquivos <code>.class</code>. No exemplo, ela vai procurar em <code>src/</code>."
+  },
+  {
+    n: 4,
+    tag: "Bytecode",
+    text: "Verdadeiro ou Falso: O arquivo <code>App.class</code> gerado pelo <code>javac</code> é um arquivo de código binário nativo que pode ser executado diretamente pelo SO, sem a JVM.",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>.class</code> contém <strong>bytecode</strong>, não código nativo. Ele só pode ser executado pela JVM, nunca diretamente pelo SO — é exatamente isso que garante portabilidade."
+  },
+  {
+    n: 5,
+    tag: "Portabilidade",
+    text: "Você desenvolve um app Java no Windows e quer executá-lo no Linux sem recompilar. O que é necessário?",
+    options: [
+      "Nenhuma ação; qualquer arquivo .java roda em qualquer sistema diretamente.",
+      "Deve-se recompilar o código no Linux usando o javac do Linux.",
+      "Ter uma JVM instalada no Linux; o mesmo bytecode (.class) funciona.",
+      "Converter o .class para .exe usando uma ferramenta de empacotamento."
+    ],
+    answer: "C",
+    explanation: "O bytecode é <strong>independente de plataforma</strong>. Basta ter uma JVM instalada no Linux — ela sabe como interpretar e executar o bytecode gerado no Windows."
+  },
+  {
+    n: 6,
+    tag: "Convenções",
+    text: "O código abaixo tem um erro sutil. Identifique-o.\n<pre>public class app {\n  public static void main(String[] args) {\n    System.out.println(\"Olá, Mundo!\");\n  }\n}</pre>",
+    options: [
+      "O nome da classe 'app' começa com letra minúscula.",
+      "Entre colchetes falta argumento para execução do código.",
+      "Ao final do código é necessário inserir um ponto e vírgula.",
+      "Nenhuma das alternativas anteriores."
+    ],
+    answer: "A",
+    explanation: "Em Java, por convenção (e por exigência do compilador quando o arquivo se chama <code>App.java</code>), o nome da classe deve começar com <strong>letra maiúscula</strong>: <code>public class App</code>."
+  },
+  {
+    n: 7,
+    tag: "Classpath",
+    text: "Após compilar com <code>javac src/App.java</code>, o <code>App.class</code> fica em <code>src/</code>. Se você executar <code>java App</code> <strong>sem</strong> o <code>-cp</code>, o que acontece?",
+    options: [
+      "Executa normalmente; Java procura em todas as pastas automaticamente.",
+      "Java procura App.class no diretório atual (não em src) e lança ClassNotFoundException.",
+      "O Java recompila o arquivo e executa.",
+      "Nenhuma das alternativas anteriores."
+    ],
+    answer: "B",
+    explanation: "Sem <code>-cp</code>, a JVM usa o diretório atual como classpath. Como <code>App.class</code> está em <code>src/</code>, ela não o encontra e lança <strong>ClassNotFoundException</strong>."
+  },
+  {
+    n: 8,
+    tag: "System.exit",
+    text: "O código abaixo compila sem erros, mas tem comportamento inesperado. O que será impresso?\n<pre>public class App {\n  public static void main(String[] args) throws Exception {\n    System.out.println(\"Linha 1\");\n    System.exit(0);\n    System.out.println(\"Linha 2\");\n  }\n}</pre>",
+    options: [
+      "Apenas 'Linha 1' é impresso. System.exit(0) encerra a JVM imediatamente.",
+      "Apenas 'Linha 2' é impresso.",
+      "Nada é impresso pois System.exit(0) encerra antes.",
+      "Imprime 'Linha 1', depois 'Linha 2' e então System.exit(0) é executado."
+    ],
+    answer: "A",
+    explanation: "<code>System.exit(0)</code> <strong>encerra a JVM imediatamente</strong>. Tudo após essa linha é código morto (unreachable). Apenas <strong>Linha 1</strong> é impressa."
+  },
+  {
+    n: 9,
+    tag: "JDK / JRE",
+    text: "Qual componente do ecossistema Java é necessário para um usuário final que apenas quer <strong>executar</strong> um programa Java, sem desenvolvê-lo?",
+    options: [
+      "JDK (Kit de Desenvolvimento Java).",
+      "JRE (Java Runtime Environment).",
+      "javac (compilador Java).",
+      "JVM isolada, sem JRE."
+    ],
+    answer: "B",
+    explanation: "O <strong>JRE</strong> contém a JVM e as bibliotecas necessárias para <em>executar</em> programas Java. O JDK é necessário apenas para quem vai <em>desenvolver/compilar</em>."
+  },
+  {
+    n: 10,
+    tag: "Compilação",
+    text: "Analise a sequência:\n<pre>1. javac src/App.java\n2. java -cp src App</pre>O que aconteceria se a ordem fosse invertida (executar o passo 2 antes do 1)?",
+    options: [
+      "O Java executaria o .java diretamente, sem compilar.",
+      "Funcionaria normalmente; Java detecta .java na ausência de .class.",
+      "O Java compilaria automaticamente antes de executar.",
+      "Ocorreria erro porque o arquivo App.class ainda não existe."
+    ],
+    answer: "D",
+    explanation: "<code>java</code> precisa do arquivo <code>.class</code> para executar. Se você não compilou antes, o arquivo não existe e a JVM lança um erro. <strong>Compilar sempre vem primeiro.</strong>"
+  },
+  {
+    n: 11,
+    tag: "Concatenação",
+    text: "Qual será a saída exata deste código?\n<pre>String nome = \"Java\";\nSystem.out.println(\"Olá, \" + nome + \"!\");\nSystem.out.println(\"Versão: \" + 8 + 8);\nSystem.out.println(\"Soma: \" + (8 + 8));</pre>",
+    options: [
+      "Saída: 'Olá, Java!', 'Versão: 88', 'Soma: 16'",
+      "Saída: 'Olá, Java!', 'Versão: 88', 'Soma: 88'",
+      "Ocorrerá erro de execução.",
+      "Nenhuma das alternativas acima."
+    ],
+    answer: "A",
+    explanation: "<code>\"Versão: \" + 8 + 8</code> → concatena da esquerda: <code>\"Versão: 8\" + 8 = \"Versão: 88\"</code>. Já <code>(8 + 8)</code> soma primeiro (precedência dos parênteses): <code>16</code>. Saída: <strong>Olá, Java! / Versão: 88 / Soma: 16</strong>."
+  },
+  {
+    n: 12,
+    tag: "Tipos Primitivos",
+    text: "O que acontece ao tentar compilar e executar?\n<pre>byte valor = 200;\nSystem.out.println(valor);</pre>",
+    options: [
+      "Compila e imprime 200, pois byte aceita qualquer número inteiro pequeno.",
+      "Erro de compilação: 200 está fora do intervalo do tipo byte (-128 a 127).",
+      "Compila, mas imprime -56 por causa do overflow silencioso.",
+      "Compila e imprime 200; o Java converte automaticamente para int."
+    ],
+    answer: "B",
+    explanation: "O tipo <code>byte</code> aceita valores de <strong>-128 a 127</strong>. O valor 200 está fora desse intervalo e o compilador rejeita a atribuição com erro em <em>tempo de compilação</em>."
+  },
+  {
+    n: 13,
+    tag: "Tipos Primitivos",
+    text: "Verdadeiro ou Falso: <code>String</code> é um tipo primitivo em Java, assim como <code>int</code>, <code>double</code> e <code>boolean</code>.",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>String</code> é uma <strong>classe</strong> (objeto), não tipo primitivo. Os primitivos em Java são: byte, short, int, long, float, double, boolean e char. String fica no heap e não tem tamanho fixo."
+  },
+  {
+    n: 14,
+    tag: "Tipo char",
+    text: "Qual das alternativas abaixo está <strong>INCORRETA</strong> sobre o tipo <code>char</code>?",
+    options: [
+      "char ocupa 16 bits de memória.",
+      "char pode armazenar caracteres Unicode, como letras acentuadas e símbolos.",
+      "char é um tipo primitivo numérico sem sinal, podendo armazenar valores de 0 a 65.535.",
+      "char e String são equivalentes quando se armazena um único caractere; ambos se comportam da mesma forma."
+    ],
+    answer: "D",
+    explanation: "<code>char</code> e <code>String</code> <strong>não são equivalentes</strong>. <code>char</code> é primitivo e armazena um único caractere. <code>String</code> é objeto, imutável, e suporta métodos. Você não pode chamar <code>'a'.length()</code>, por exemplo."
+  },
+  {
+    n: 15,
+    tag: "Tipagem Forte",
+    type: "open",
+    text: "Java é descrita como uma linguagem <strong>fortemente tipada</strong>. Explique o que isso significa na prática, relacionando com a necessidade de declarar tipos como <code>int</code>, <code>double</code> ou <code>boolean</code> antes de usar uma variável. Dê um exemplo de código.",
+    gabarito: "<strong>Resposta esperada:</strong> Fortemente tipada significa que cada variável tem um tipo fixo declarado em tempo de compilação, que não pode mudar. O Java rejeita atribuições incompatíveis antes mesmo de rodar. Exemplo:\n<pre>int x = 10;\nx = \"hello\"; // ERRO de compilação</pre>Isso previne bugs em tempo de execução que seriam difíceis de rastrear."
+  },
+  {
+    n: 16,
+    tag: "Divisão",
+    text: "Qual será a saída exata do código abaixo?\n<pre>int a = 10;\nint b = 3;\nSystem.out.println(a / b);\nSystem.out.println((double) a / b);</pre>",
+    options: [
+      "Na primeira linha 3.333... e na segunda linha 3.333...",
+      "Na primeira linha 3 e na segunda linha 3.3333333333333335",
+      "Na primeira linha 3 e na segunda linha 3.333...",
+      "Erro de compilação: não é possível dividir int por int."
+    ],
+    answer: "B",
+    explanation: "<code>int / int</code> trunca a parte decimal → <strong>3</strong>. Com cast <code>(double) a / b</code>, a é promovido para double antes da divisão → <strong>3.3333333333333335</strong> (representação IEEE 754)."
+  },
+  {
+    n: 17,
+    tag: "Módulo",
+    text: "Qual será a saída do trecho abaixo?\n<pre>int x = 17;\nint y = 5;\nSystem.out.println(x % y);\nSystem.out.println(x % 2);</pre>",
+    options: [
+      "3 / 1 — 17 % 5 = 3, e 17 é ímpar (resto 1).",
+      "2 / 0 — 17 % 5 = 2, e 17 é par.",
+      "3 / 0 — 17 % 5 = 3, e 17 é par.",
+      "2 / 1 — 17 % 5 = 2, e 17 é ímpar."
+    ],
+    answer: "D",
+    explanation: "<code>17 % 5</code>: 5×3=15, sobra <strong>2</strong>. <code>17 % 2</code>: 17 é ímpar, sobra <strong>1</strong>. Resposta: <strong>2 e 1</strong>. Atenção: o gabarito original marca D, e a conta confirma. ⚠️ <em>Nota: verifique com seu professor, há versões deste simulado com gabarito A (3 e 1), que seria correto se x fosse 17 com 17÷5 resto 2... mas 17-15=2 mesmo.</em>"
+  },
+  {
+    n: 18,
+    tag: "Operadores",
+    text: "Verdadeiro ou Falso: As duas linhas abaixo produzem exatamente o mesmo resultado impresso.\n<pre>int x = 5;\nSystem.out.println(x++); // pós-incremento\nSystem.out.println(++x); // pré-incremento</pre>",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>x++</code> usa o valor atual (5) e <em>depois</em> incrementa. <code>++x</code> incrementa <em>antes</em> de usar. Resultado: imprime <strong>5</strong> (x vira 6), depois imprime <strong>7</strong> (pré-incrementa para 7). São diferentes."
+  },
+  {
+    n: 19,
+    tag: "Divisão / double",
+    type: "open",
+    text: "Um estudante calculou a média de três notas (7, 8 e 9) com <code>int</code> e ficou confuso. Analise o código, explique o erro e escreva a versão correta.\n<pre>int nota1=7, nota2=8, nota3=9;\nint media = (nota1 + nota2 + nota3) / 3;\nSystem.out.println(\"Média: \" + media);</pre>",
+    gabarito: "<strong>Problema:</strong> divisão inteira trunca decimais. Com notas 7, 8 e 9 funciona (24÷3=8 exato), mas em outros casos perderia decimais.<br><br><strong>Correção:</strong><br><pre>double media = (nota1 + nota2 + nota3) / 3.0;\n// ou: (double)(nota1 + nota2 + nota3) / 3;</pre>Dividir por <code>3.0</code> (double) faz Java promover a divisão para ponto flutuante."
+  },
+  {
+    n: 20,
+    tag: "% vs /",
+    type: "open",
+    text: "Explique a diferença entre <code>/</code> (divisão) e <code>%</code> (módulo) em Java para inteiros. Dê um exemplo prático de <code>%</code> fora do contexto de par/ímpar — por exemplo, em um problema de relógio ou agrupamento.",
+    gabarito: "<strong>/ (divisão inteira):</strong> retorna o quociente truncado. Ex: <code>17 / 5 = 3</code>.<br><strong>% (módulo):</strong> retorna o resto da divisão. Ex: <code>17 % 5 = 2</code>.<br><br><strong>Exemplo de relógio:</strong><br><pre>int hora = (horaAtual + 5) % 24; // volta ao 0 após 23\nint minuto = (minutos + 90) % 60; // overflow de minutos</pre>O % é fundamental para ciclos e rotações."
+  },
+  {
+    n: 21,
+    tag: "Lógica",
+    text: "Qual é o resultado de <code>resultado</code>?\n<pre>int idade = 17;\nboolean temAutorizacao = true;\nboolean resultado = (idade >= 18) || (idade >= 16 && temAutorizacao);\nSystem.out.println(resultado);</pre>",
+    options: [
+      "false — idade não é >= 18, logo toda a expressão é falsa.",
+      "true — idade >= 18 é true, o OR já basta.",
+      "true — mesmo que idade >= 18 seja false, a segunda parte (idade >= 16 && temAutorizacao) é true, e OR só precisa de um lado verdadeiro.",
+      "Erro de compilação."
+    ],
+    answer: "C",
+    explanation: "<code>idade >= 18</code> → false. <code>idade >= 16 && temAutorizacao</code> → true && true → <strong>true</strong>. <code>false || true</code> → <strong>true</strong>. O OR retorna true se <em>qualquer</em> lado for verdadeiro."
+  },
+  {
+    n: 22,
+    tag: "if/else",
+    text: "Verdadeiro ou Falso: No código abaixo, o bloco <code>else</code> será executado.\n<pre>int nota = 60;\nif (nota >= 60) {\n  System.out.println(\"Aprovado\");\n} else {\n  System.out.println(\"Reprovado\");\n}</pre>",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>nota >= 60</code> com nota=60 é <strong>verdadeiro</strong>. Logo, o bloco <code>if</code> executa e imprime <em>\"Aprovado\"</em>. O <code>else</code> nunca é alcançado."
+  },
+  {
+    n: 23,
+    tag: "if/else encadeado",
+    text: "Qual será a saída para <code>nota = 75</code>?\n<pre>if (nota >= 90) { System.out.println(\"Aprovado com excelência\"); }\nelse if (nota >= 60) { System.out.println(\"Aprovado\"); }\nelse { System.out.println(\"Reprovado\"); }</pre>",
+    options: [
+      "Nenhuma saída.",
+      "Aprovado com excelência.",
+      "Aprovado.",
+      "Aprovado / Aprovado com excelência — ambas as condições são verdadeiras."
+    ],
+    answer: "C",
+    explanation: "<code>75 >= 90</code> → false. <code>75 >= 60</code> → true → cai no segundo bloco: imprime <strong>\"Aprovado\"</strong>. Em if/else encadeado, apenas o primeiro bloco verdadeiro executa."
+  },
+  {
+    n: 24,
+    tag: "Bug Lógico",
+    type: "open",
+    text: "O código abaixo tem um bug lógico que faz com que nunca imprima <em>\"Adolescente\"</em>. Identifique e corrija.\n<pre>int idade = 15;\nif (idade < 12) {\n  System.out.println(\"Criança\");\n} else if (idade > 18) {\n  System.out.println(\"Adulto\");\n} else {\n  System.out.println(\"Adolescente\");\n}</pre>",
+    gabarito: "<strong>Bug:</strong> a condição <code>idade &gt; 18</code> usa &gt; (estritamente maior), então uma pessoa com exatamente <strong>18 anos</strong> não entra no bloco Adulto — cai no <code>else</code> como Adolescente, o que é incorreto.<br><br><strong>Teste mental:</strong><br>• idade = 15 → 15 &lt; 12 (F) → 15 &gt; 18 (F) → else → imprime Adolescente ✅<br>• idade = 18 → 18 &lt; 12 (F) → 18 &gt; 18 (F) → else → imprime Adolescente ❌ (deveria ser Adulto!)<br><br><strong>Correção:</strong><br><pre>} else if (idade >= 18) {\n  System.out.println(\"Adulto\");\n}</pre>Lição: sempre questione se o limite deve ser &gt; (exclusivo) ou &gt;= (inclusivo)."
+  },
+  {
+    n: 25,
+    tag: "&&  ||  curto-circuito",
+    type: "open",
+    text: "Explique a diferença entre <code>&&</code> (AND) e <code>||</code> (OR) em termos de tabela verdade. Explique também o conceito de <strong>curto-circuito</strong> (short-circuit evaluation): o que acontece quando o Java avalia <code>false && expressao</code> ou <code>true || expressao</code>?",
+    gabarito: "<strong>AND (&&):</strong> só é true se AMBOS forem true.<br><strong>OR (||):</strong> basta UM ser true.<br><br><strong>Curto-circuito:</strong> Java para de avaliar assim que o resultado já é conhecido.<br>• <code>false && X</code> → Java nunca avalia X (resultado já é false).<br>• <code>true || X</code> → Java nunca avalia X (resultado já é true).<br><br><strong>Exemplo prático:</strong><br><pre>if (obj != null && obj.metodo()) { ... }\n// Se obj for null, metodo() nunca é chamado → evita NullPointerException</pre>"
+  },
+  {
+    n: 26,
+    tag: "Scanner",
+    text: "Para usar a classe Scanner em Java, qual alternativa está <strong>completamente correta</strong>?",
+    options: [
+      "import java.Scanner; Scanner sc = new Scanner();",
+      "import java.util.Scanner; Scanner sc = new Scanner(System.in);",
+      "import Scanner; Scanner sc = Scanner.create(System.in);",
+      "java.util.Scanner sc = Scanner(System.in);"
+    ],
+    answer: "B",
+    explanation: "A forma correta é <code>import java.util.Scanner;</code> (pacote completo) e instanciar com <code>new Scanner(System.in)</code> passando a entrada padrão."
+  },
+  {
+    n: 27,
+    tag: "Scanner",
+    text: "Verdadeiro ou Falso: O método <code>nextLine()</code> do Scanner lê apenas a primeira palavra digitada, ignorando espaços.",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>nextLine()</code> lê <strong>a linha inteira</strong>, incluindo espaços, até o Enter. Quem lê apenas a primeira palavra (até o espaço) é <code>next()</code>."
+  },
+  {
+    n: 28,
+    tag: "Scanner / buffer",
+    text: "O que acontece quando o usuário digita \"25\" e o programa chega no <code>nextLine()</code>?\n<pre>Scanner sc = new Scanner(System.in);\nint idade = sc.nextInt();\nString nome = sc.nextLine();\nSystem.out.println(\"Nome: \" + nome);</pre>",
+    options: [
+      "O programa aguarda o usuário digitar o nome normalmente.",
+      "nextLine() captura o '\\n' que nextInt() deixou no buffer, e 'nome' fica vazio.",
+      "O programa lança InputMismatchException.",
+      "nextInt() consome o Enter automaticamente, então nextLine() funciona normalmente."
+    ],
+    answer: "B",
+    explanation: "<code>nextInt()</code> lê o número mas <strong>não consome o \\n (Enter)</strong>. Quando <code>nextLine()</code> é chamado, ele lê esse \\n residual e retorna string vazia. Para evitar: adicione um <code>sc.nextLine()</code> extra após o <code>nextInt()</code>, ou use <code>Integer.parseInt(sc.nextLine())</code>."
+  },
+  {
+    n: 29,
+    tag: "Scanner / parseInt",
+    type: "open",
+    text: "Identifique o que cada linha de conversão faz e explique por que essa abordagem é preferível à mistura de <code>nextInt()</code> com <code>nextLine()</code>.\n<pre>int idade = Integer.parseInt(sc.nextLine());\ndouble altura = Double.parseDouble(sc.nextLine());\nString nome = sc.nextLine();\nsc.close();</pre>",
+    gabarito: "<strong>Integer.parseInt(sc.nextLine())</strong> → lê a linha como String e converte para int.<br><strong>Double.parseDouble(sc.nextLine())</strong> → lê a linha e converte para double.<br><strong>sc.nextLine()</strong> → lê diretamente como String.<br><br><strong>Por que é melhor?</strong> Usando sempre <code>nextLine()</code>, o buffer é consumido completamente a cada leitura. Não há risco do '\\n' residual do <code>nextInt()</code> interferir nas leituras seguintes — evita o bug clássico de string vazia."
+  },
+  {
+    n: 30,
+    tag: "Scanner / close",
+    type: "open",
+    text: "Por que é boa prática chamar <code>sc.close()</code> ao final do uso do Scanner? O que acontece se não fecharmos? Em que situações isso é mais crítico?",
+    gabarito: "<code>sc.close()</code> libera os recursos do sistema associados ao Scanner (e ao stream subjacente). Sem isso:<br>• O stream permanece aberto, consumindo recursos.<br>• Em arquivos ou conexões de rede, isso pode causar <em>resource leaks</em> sérios.<br>• O GC eventual fecha, mas sem garantia de timing.<br><br><strong>Mais crítico:</strong> ao ler de arquivos (<code>new Scanner(new File(...))</code>) ou conexões. Para <code>System.in</code>, o impacto é menor, mas a prática de fechar é importante. Use <em>try-with-resources</em> em produção: <code>try (Scanner sc = new Scanner(System.in)) { ... }</code>"
+  },
+  {
+    n: 31,
+    tag: "while",
+    text: "Qual será a saída exata do código abaixo?\n<pre>int contador = 1;\nwhile (contador <= 5) {\n  System.out.print(contador + \" \");\n  contador++;\n}\nSystem.out.println(\"Fim da repetição!\");</pre>",
+    options: [
+      "1 2 3 4 5 6 Fim da repetição!",
+      "1 2 3 4 5 Fim da repetição!",
+      "1 2 3 4 5 \nFim da repetição!",
+      "Loop infinito."
+    ],
+    answer: "C",
+    explanation: "O loop imprime 1 a 5 com <code>print</code> (sem quebra de linha), terminando com espaço. Depois <code>println</code> imprime \"Fim da repetição!\" em nova linha. Saída: <strong>1 2 3 4 5 \\nFim da repetição!</strong>"
+  },
+  {
+    n: 32,
+    tag: "while(true)",
+    text: "Verdadeiro ou Falso: Um loop <code>while(true)</code> é sempre um erro de programação e nunca deve ser usado.",
+    options: ["Verdadeiro", "Falso"],
+    answer: "B",
+    explanation: "Falso. <code>while(true)</code> é legítimo e comum, especialmente em menus interativos, servidores, e loops com <code>break</code> interno. O que <em>nunca</em> deve existir é um loop sem mecanismo de saída."
+  },
+  {
+    n: 33,
+    tag: "Loop Infinito",
+    text: "O código abaixo contém o erro clássico do loop infinito. O que acontece?\n<pre>int contador = 1;\nwhile (contador <= 5) {\n  System.out.println(\"Número: \" + contador);\n  // contador++; <- removida\n}</pre>",
+    options: [
+      "Erro de compilação: o compilador detecta que contador nunca muda.",
+      "O programa imprime 'Número: 1' infinitamente, travando a JVM.",
+      "Imprime 'Número: 1' apenas uma vez e encerra.",
+      "Imprime 'Número: 1' cinco vezes e encerra; o Java limita loops."
+    ],
+    answer: "B",
+    explanation: "<code>contador</code> nunca é incrementado, então <code>contador <= 5</code> é sempre true. O Java <strong>não limita loops</strong> automaticamente — o programa trava imprimindo <em>\"Número: 1\"</em> para sempre até o processo ser forçadamente encerrado."
+  },
+  {
+    n: 34,
+    tag: "while / Scanner",
+    type: "open",
+    text: "Escreva (em Java ou pseudocódigo) um <code>while</code> que leia números do usuário e some apenas os positivos, parando quando o usuário digitar um número negativo. Ao final, exiba a soma.",
+    gabarito: "<pre>Scanner sc = new Scanner(System.in);\nint soma = 0;\nSystem.out.print(\"Digite um número: \");\nint num = Integer.parseInt(sc.nextLine());\nwhile (num >= 0) {\n  soma += num;\n  System.out.print(\"Digite um número: \");\n  num = Integer.parseInt(sc.nextLine());\n}\nSystem.out.println(\"Soma: \" + soma);\nsc.close();</pre>O número negativo que encerra o loop <strong>não</strong> é somado — isso é garantido pela leitura antes do while e no final do corpo."
+  },
+  {
+    n: 35,
+    tag: "while — corpo nunca executa",
+    type: "open",
+    text: "O <code>while</code> verifica a condição <strong>antes</strong> de executar o corpo. Explique em que situação prática isso pode fazer com que o corpo <strong>nunca</strong> seja executado, e dê um exemplo concreto.",
+    gabarito: "Se a condição já for <strong>false desde a primeira verificação</strong>, o corpo nunca executa.<br><br><strong>Exemplo:</strong><br><pre>int nota = 100;\nwhile (nota < 60) {\n  System.out.println(\"Reprovado\"); // NUNCA executa\n  nota++;\n}</pre>Isso contrasta com o <code>do-while</code>, que executaria ao menos uma vez mesmo com <code>nota = 100</code>."
+  },
+  {
+    n: 36,
+    tag: "do-while",
+    text: "Qual é a diferença fundamental entre <code>while</code> e <code>do-while</code>?",
+    options: [
+      "Não há diferença prática; são intercambiáveis.",
+      "O do-while verifica a condição ANTES, mas exige ponto e vírgula no final.",
+      "O do-while executa o corpo PRIMEIRO e só depois verifica — sempre roda ao menos uma vez.",
+      "O do-while é mais rápido pois não verifica na primeira iteração."
+    ],
+    answer: "C",
+    explanation: "O <code>do-while</code> garante <strong>pelo menos uma execução</strong> do corpo porque a condição é verificada <em>após</em> a execução. O <code>while</code> pode ter seu corpo nunca executado se a condição for falsa de início."
+  },
+  {
+    n: 37,
+    tag: "do-while",
+    text: "Verdadeiro ou Falso: O código abaixo imprime \"Executou!\" mesmo com a condição sendo false desde o início.\n<pre>int x = 10;\ndo {\n  System.out.println(\"Executou!\");\n} while (x < 5);</pre>",
+    options: ["Verdadeiro", "Falso"],
+    answer: "A",
+    explanation: "Verdadeiro. O <code>do-while</code> executa o corpo <strong>antes</strong> de checar a condição. Mesmo que <code>x < 5</code> seja false, <em>\"Executou!\"</em> é impresso uma vez. Depois a condição é avaliada e o loop encerra."
+  },
+  {
+    n: 38,
+    tag: "do-while — caso de uso",
+    text: "Qual situação é o caso de uso <strong>MAIS adequado</strong> para <code>do-while</code>?",
+    options: [
+      "Percorrer uma lista de 100 itens do início ao fim.",
+      "Validar a entrada do usuário: exibir menu e pedir opção, repetindo enquanto a opção for inválida.",
+      "Contar de 1 até N, onde N pode ser 0.",
+      "Verificar se uma variável já inicializada satisfaz uma condição antes de processá-la."
+    ],
+    answer: "B",
+    explanation: "Validação de entrada é o caso clássico do <code>do-while</code>: você precisa mostrar o menu ao menos uma vez antes de checar se a resposta é válida. Se válida, sai; senão, repete — perfeito para \"pedir até acertar\"."
+  },
+  {
+    n: 39,
+    tag: "do-while / equals",
+    type: "open",
+    text: "O código abaixo tem um bug. Identifique e corrija.\n<pre>Scanner sc = new Scanner(System.in);\nString senha, confirmacao;\ndo {\n  System.out.print(\"Digite a senha: \");\n  senha = sc.nextLine();\n  System.out.print(\"Confirme a senha: \");\n  confirmacao = sc.nextLine();\n} while (senha != confirmacao); // BUG\nSystem.out.println(\"Senha cadastrada com sucesso!\");</pre>",
+    gabarito: "<strong>Bug:</strong> <code>!=</code> compara <em>referências</em> de objetos, não o conteúdo. Duas strings com o mesmo texto podem ser objetos diferentes na memória → o loop nunca termina.<br><br><strong>Correção:</strong><br><pre>} while (!senha.equals(confirmacao));</pre><code>equals()</code> compara o <em>conteúdo</em> caractere a caractere. Para ignorar maiúsculas/minúsculas: <code>!senha.equalsIgnoreCase(confirmacao)</code>."
+  },
+  {
+    n: 40,
+    tag: "while vs do-while",
+    type: "open",
+    text: "Compare <code>while</code> e <code>do-while</code> em termos de: (1) quando a condição é avaliada, (2) número mínimo de execuções, (3) sintaxe, e (4) dê um cenário real para cada.",
+    gabarito: "<strong>1. Condição:</strong><br>• while: avaliada ANTES do corpo.<br>• do-while: avaliada DEPOIS do corpo.<br><br><strong>2. Mínimo de execuções:</strong><br>• while: 0 (pode nunca executar).<br>• do-while: 1 (sempre executa ao menos uma vez).<br><br><strong>3. Sintaxe:</strong><br>• while: <code>while(cond) { }</code><br>• do-while: <code>do { } while(cond);</code> ← note o ponto e vírgula obrigatório.<br><br><strong>4. Cenários:</strong><br>• while: percorrer arquivo linha a linha (pode estar vazio).<br>• do-while: menu interativo (sempre exibe ao menos uma vez)."
+  },
+  {
+    n: 41,
+    tag: "for",
+    text: "Sobre a estrutura <code>for</code>, assinale a alternativa correta:",
+    options: [
+      "A condição é executada apenas uma vez no início do loop.",
+      "A inicialização é executada a cada repetição.",
+      "A atualização ocorre ao final de cada iteração.",
+      "O for só pode ser usado com números inteiros."
+    ],
+    answer: "C",
+    explanation: "No <code>for</code>: (1) inicialização roda 1× antes; (2) condição é verificada antes de cada iteração; (3) atualização roda ao <strong>final de cada iteração</strong>. O for funciona com qualquer tipo numérico."
+  },
+  {
+    n: 42,
+    tag: "for — quando usar",
+    text: "Em qual situação o uso do <code>for</code> é <strong>mais adequado</strong>?",
+    options: [
+      "Quando não se sabe quantas vezes o loop será executado.",
+      "Quando há repetição infinita.",
+      "Quando o número de repetições é conhecido previamente.",
+      "Quando há entrada de dados do usuário indefinida."
+    ],
+    answer: "C",
+    explanation: "O <code>for</code> é ideal quando o <strong>número de iterações é conhecido</strong>. Para iterações indefinidas (ex: leitura de usuário até condição), use <code>while</code> ou <code>do-while</code>."
+  },
+  {
+    n: 43,
+    tag: "for",
+    text: "Qual será a saída do código abaixo?\n<pre>for (int i = 1; i <= 3; i++) {\n  System.out.print(i + \" \");\n}</pre>",
+    options: ["1 2 3 4", "1 2 3", "0 1 2 3", "1 2"],
+    answer: "B",
+    explanation: "O loop vai de i=1 até i<=3. Imprime 1, 2, 3 com espaço. Quando i=4, a condição <code>i<=3</code> é false e o loop encerra. Saída: <strong>1 2 3</strong>"
+  },
+  {
+    n: 44,
+    tag: "for — características",
+    text: "Sobre o loop <code>for</code>, é correto afirmar:",
+    options: [
+      "Pode conter mais de uma variável na inicialização.",
+      "Não permite decremento.",
+      "Sempre precisa de chaves {}.",
+      "Só funciona com arrays."
+    ],
+    answer: "A",
+    explanation: "É possível declarar múltiplas variáveis: <code>for (int i=0, j=10; i<j; i++, j--)</code>. O for permite decremento (<code>i--</code>), funciona sem chaves (para uma linha), e não é limitado a arrays."
+  },
+  {
+    n: 45,
+    tag: "for — decremento",
+    text: "Qual será a saída do código?\n<pre>for (int i = 10; i > 5; i--) {\n  System.out.print(i + \" \");\n}</pre>",
+    options: ["10 9 8 7 6", "10 9 8 7 6 5", "9 8 7 6", "10 9 8 7"],
+    answer: "A",
+    explanation: "O loop começa em i=10 e vai até i>5 (parar quando i=5, pois 5>5 é false). Imprime: <strong>10 9 8 7 6</strong>. O valor 5 não é impresso pois a condição exclui o próprio 5."
+  },
+  {
+    n: 46,
+    tag: "for — V ou F",
+    type: "open",
+    text: "Marque (V) ou (F) para cada afirmação sobre o <code>for</code>:\n<pre>( ) O for executa a condição antes de cada repetição\n( ) O bloco executa mesmo se a condição for falsa na primeira verificação\n( ) É possível usar o for sem a parte de atualização\n( ) O for pode ser usado para percorrer arrays\n( ) A inicialização pode declarar mais de uma variável</pre>",
+    gabarito: "<strong>V</strong> — O for verifica a condição antes de cada iteração.<br><strong>F</strong> — Se a condição for falsa de início, o corpo nunca executa.<br><strong>V</strong> — A atualização é opcional: <code>for (int i=0; i<5;) { i++; }</code><br><strong>V</strong> — O for é amplamente usado com arrays via índice.<br><strong>V</strong> — Ex: <code>for (int i=0, j=10; ...)</code>"
+  },
+  {
+    n: 47,
+    tag: "for — soma",
+    text: "Qual será a saída do código abaixo?\n<pre>int soma = 0;\nfor (int i = 1; i <= 5; i++) {\n  soma += i;\n}\nSystem.out.println(soma);</pre>",
+    options: ["10", "15", "5", "20"],
+    answer: "B",
+    explanation: "Soma acumulada: 1+2+3+4+5 = <strong>15</strong>. É a fórmula da soma de Gauss: n*(n+1)/2 = 5*6/2 = 15."
+  },
+  {
+    n: 48,
+    tag: "for — passo 2",
+    text: "Qual será a saída?\n<pre>for (int i = 0; i < 5; i += 2) {\n  System.out.print(i + \" \");\n}</pre>",
+    options: ["0 1 2 3 4", "0 2 4", "1 3 5", "2 4"],
+    answer: "B",
+    explanation: "O passo é <code>i += 2</code>: i vai 0 → 2 → 4 → 6 (condição i<5 é false). Saída: <strong>0 2 4</strong>."
+  },
+  {
+    n: 49,
+    tag: "for aninhado",
+    text: "O que esse código faz?\n<pre>for (int i = 1; i <= 3; i++) {\n  for (int j = 1; j <= 2; j++) {\n    System.out.print(\"*\");\n  }\n  System.out.println();\n}</pre>",
+    options: [
+      "Imprime 3 linhas com 2 asteriscos cada.",
+      "Imprime 2 linhas com 3 asteriscos.",
+      "Imprime 6 asteriscos em uma linha.",
+      "Gera erro."
+    ],
+    answer: "A",
+    explanation: "O loop externo (i) repete 3 vezes. Para cada repetição, o loop interno (j) imprime 2 asteriscos. Depois <code>println()</code> quebra a linha. Resultado: 3 linhas, cada uma com <strong>**</strong>."
+  },
+  {
+    n: 50,
+    tag: "for — regressivo",
+    text: "Qual alternativa representa corretamente um loop que faz contagem regressiva de 5 até 1?",
+    options: [
+      "for (int i = 1; i <= 5; i--)",
+      "for (int i = 5; i >= 1; i--)",
+      "for (int i = 5; i <= 1; i--)",
+      "for (int i = 1; i >= 5; i++)"
+    ],
+    answer: "B",
+    explanation: "Para contar de 5 a 1: começa em 5, condição é <code>i >= 1</code>, e decrementa (<code>i--</code>). A opção A seria loop infinito (nunca para), C nunca executa (5 <= 1 é false), D nunca executa (1 >= 5 é false)."
+  },
+  {
+    n: 51,
+    tag: "Fatorial",
+    text: "Qual código calcula corretamente o fatorial de 5?",
+    options: [
+      "int f = 0; for (int i = 1; i <= 5; i++) { f += i; }",
+      "int f = 1; for (int i = 1; i <= 5; i++) { f *= i; }",
+      "int f = 5; for (int i = 1; i <= 5; i++) { f += i; }",
+      "int f = 1; for (int i = 0; i < 5; i++) { f *= i; }"
+    ],
+    answer: "B",
+    explanation: "Fatorial usa multiplicação acumulada (<code>f *= i</code>), não soma. Deve iniciar com <code>f = 1</code> (elemento neutro da multiplicação). A opção D começaria com i=0, zerando tudo (0×1×2... = 0). 5! = 1×2×3×4×5 = <strong>120</strong>."
+  }
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+let answered = {};
+let startTime = Date.now();
+let timerInterval;
+
+// =====================================================================
+// BUILD UI
+// =====================================================================
+function buildQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  answered = {};
+  updateProgress();
+
+  let sectionMap = {};
+
+  questions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `q-${q.n}`;
+
+    const isOpen = q.type === 'open';
+
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-number">Questão ${q.n} / 51</span>
+        <span class="q-tag">${q.tag}</span>
+      </div>
+      <div class="q-text">${q.text}</div>
+      ${isOpen ? buildOpenQuestion(q) : buildMCQ(q)}
+      <div class="feedback" id="fb-${q.n}"></div>
+      ${isOpen ? `<div style="margin-top:12px">
+        <button class="confirm-btn" id="btn-${q.n}" onclick="revealGabarito(${q.n})">Ver Gabarito</button>
+      </div>` : `<div style="margin-top:12px">
+        <button class="confirm-btn" id="btn-${q.n}" onclick="confirmAnswer(${q.n})" disabled>Confirmar</button>
+      </div>`}
+      ${isOpen ? `<div class="gabarito-box" id="gab-${q.n}">${q.gabarito}</div>` : `<div class="gabarito-box" id="gab-${q.n}"></div>`}
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function buildMCQ(q) {
+  const letters = ['A','B','C','D'];
+  return `<div class="options" id="opts-${q.n}">
+    ${q.options.map((opt, i) => `
+      <button class="option" onclick="selectOption(${q.n}, '${letters[i]}', this)">
+        <span class="opt-letter">${letters[i]}</span>
+        <span>${opt}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+
+function buildOpenQuestion(q) {
+  return `<textarea class="open-answer" id="oa-${q.n}" placeholder="Escreva sua resposta aqui..." oninput="updateProgress()"></textarea>`;
+}
+
+// =====================================================================
+// INTERACTIONS
+// =====================================================================
+function selectOption(qn, letter, el) {
+  if (answered[qn]) return;
+  // deselect others
+  const opts = document.querySelectorAll(`#opts-${qn} .option`);
+  opts.forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.dataset.selected = letter;
+  document.getElementById(`btn-${qn}`).disabled = false;
+  updateProgress();
+}
+
+function confirmAnswer(qn) {
+  const q = questions.find(x => x.n === qn);
+  const opts = document.querySelectorAll(`#opts-${qn} .option`);
+  const letters = ['A','B','C','D'];
+  let selectedLetter = null;
+
+  opts.forEach((o, i) => {
+    if (o.classList.contains('selected')) selectedLetter = letters[i];
+  });
+
+  if (!selectedLetter) return;
+
+  answered[qn] = selectedLetter;
+  const correct = selectedLetter === q.answer;
+
+  opts.forEach((o, i) => {
+    o.disabled = true;
+    if (letters[i] === q.answer) o.classList.add('correct');
+    else if (letters[i] === selectedLetter && !correct) o.classList.add('wrong');
+  });
+
+  const card = document.getElementById(`q-${qn}`);
+  card.classList.add(correct ? 'answered-correct' : 'answered-wrong');
+
+  const fb = document.getElementById(`fb-${qn}`);
+  fb.textContent = correct ? '✅ Correto!' : `❌ Incorreto. Resposta certa: ${q.answer}`;
+  fb.className = `feedback show ${correct ? 'ok' : 'err'}`;
+
+  const gabBox = document.getElementById(`gab-${qn}`);
+  gabBox.innerHTML = `<strong>Explicação:</strong> ${q.explanation}`;
+  gabBox.classList.add('visible');
+
+  document.getElementById(`btn-${qn}`).disabled = true;
+  updateProgress();
+}
+
+function revealGabarito(qn) {
+  answered[qn] = 'open';
+  const gabBox = document.getElementById(`gab-${qn}`);
+  gabBox.classList.add('visible');
+  document.getElementById(`btn-${qn}`).disabled = true;
+  const card = document.getElementById(`q-${qn}`);
+  card.classList.add('answered-correct');
+  updateProgress();
+}
+
+// =====================================================================
+// PROGRESS
+// =====================================================================
+function updateProgress() {
+  const total = 51;
+  const done = Object.keys(answered).length;
+  document.getElementById('progress-text').textContent = `${done} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${(done/total)*100}%`;
+}
+
+// =====================================================================
+// TIMER
+// =====================================================================
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2,'0');
+    const s = String(elapsed % 60).padStart(2,'0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// =====================================================================
+// SUBMIT
+// =====================================================================
+function submitQuiz() {
+  clearInterval(timerInterval);
+  let correct = 0, wrong = 0, open = 0, skip = 0;
+
+  questions.forEach(q => {
+    const ans = answered[q.n];
+    if (!ans) {
+      skip++;
+    } else if (q.type === 'open') {
+      open++;
+    } else if (ans === q.answer) {
+      correct++;
+    } else {
+      wrong++;
+    }
+  });
+
+  const mcqTotal = questions.filter(q => !q.type).length;
+  const pct = Math.round((correct / mcqTotal) * 100);
+
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-open').textContent = open;
+  document.getElementById('r-skip').textContent = skip;
+  document.getElementById('result-score').textContent = `${pct}%`;
+
+  let title, msg;
+  if (pct >= 80) { title = '🏆 Excelente!'; msg = 'Você domina Java fundamentals. Bora para a prova!'; }
+  else if (pct >= 60) { title = '👍 Bom resultado!'; msg = 'Revise os erros e você chega lá. Você está no caminho certo.'; }
+  else { title = '📚 Continue estudando!'; msg = 'Revise os tópicos errados usando o gabarito e tente novamente.'; }
+
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-msg').textContent = msg;
+
+  const panel = document.getElementById('result-panel');
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('submit-area').style.display = 'none';
+}
+
+function restartQuiz() {
+  document.getElementById('result-panel').classList.remove('show');
+  document.getElementById('submit-area').style.display = 'block';
+  clearInterval(timerInterval);
+  buildQuiz();
+  startTimer();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+buildQuiz();
+startTimer();
+</script>
+</body>
+</html>
